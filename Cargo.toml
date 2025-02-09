@@ -1,0 +1,9 @@
+[package]
+name = "rs-sci"
+version = "0.1.0"
+description = "the scientific library"
+license = "MIT"
+license-file = "./LICENSE"
+edition = "2021"
+
+[dependencies]
