@@ -7,6 +7,23 @@ pub struct Complex<T> {
     im: T,
 }
 
+#[macro_export]
+macro_rules! complex {
+    ($re:expr, $im:expr) => {
+        Complex::<f32>::new($re as f32, $im as f32)
+    };
+    ($re:expr) => {
+        Complex::<f32>::new($re as f32, 0.0)
+    };
+}
+
+#[macro_export]
+macro_rules! im {
+    ($im:expr) => {
+        Complex::<f32>::new(0.0, $im as f32)
+    };
+}
+
 impl<T> Complex<T> {
     /// creates new complex number from real and imaginary parts
     ///
@@ -252,7 +269,7 @@ impl Complex<f64> {
     pub fn from_polar(r: f64, theta: f64) -> Self {
         Self::new(r * theta.cos(), r * theta.sin())
     }
-    
+
     /// converts to polar coordinates
     ///
     /// #### Example

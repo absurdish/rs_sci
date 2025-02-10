@@ -9,6 +9,7 @@ An advanced scientific computing crate, providing tools for math, physics and en
 - **Calculus**: Integrate, differentiate, expand series and solve differential equations.
 - **Statistics**: Everything you might need.
 - **Constants**: 30+ mathematical and physical units, precision and unit convertable.
+- **Algebra**: create custom algebraic structures or use existing rings and fields
 - **Units**: SI, US, Astronomical, Compound, Physical... All kinds of units.
 
 ## Usage
@@ -17,7 +18,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rs-sci = "0.1.0"
+rs-sci = "0.2.0"
 ```
 
 Or simply:

@@ -4,6 +4,7 @@ pub mod consts;
 pub mod linear;
 pub mod stats;
 pub mod units;
+pub mod algebra;
 
 #[cfg(test)]
 mod tests {
@@ -394,6 +395,35 @@ mod tests {
         assert!((quartiles.0 - 2.0).abs() < 1e-10); // Q1
         assert!((quartiles.1 - 3.0).abs() < 1e-10); // Q2 (median)
         assert!((quartiles.2 - 4.0).abs() < 1e-10); // Q3
+    }
+
+    #[test]
+    fn test_effect_size() {
+        let data1 = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+        let data2 = vec![2.0, 3.0, 4.0, 5.0, 6.0];
+
+        let d = Stats::cohens_d(&data1, &data2).unwrap();
+        assert!(d < 0.0); // data1 mean < data2 mean
+    }
+
+    #[test]
+    fn test_regression() {
+        let x = vec![1.0, 2.0, 3.0, 4.0, 5.0];
+        let y = vec![2.0, 4.0, 6.0, 8.0, 10.0];
+
+        let (slope, intercept) = Stats::linear_regression(&x, &y).unwrap();
+        assert!((slope - 2.0).abs() < 1e-10);
+        assert!(intercept.abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_time_series() {
+        let data = vec![1.0, 2.0, 1.0, 2.0, 1.0];
+        let ac1 = Stats::autocorrelation(&data, 1).unwrap();
+        assert!(ac1 < 0.0);
+
+        let ac2 = Stats::autocorrelation(&data, 2).unwrap();
+        assert!(ac2 > 0.0);
     }
 
     // complex numbers

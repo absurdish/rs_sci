@@ -1,62 +1,81 @@
 use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::{Add, Div, Index, IndexMut, Mul, Sub};
+//
+//
+//  Vectors
+//
+//
 
+/// 1 dimensional array
 #[derive(Debug, Clone)]
-pub struct Vector {
-    pub data: Vec<f64>,
+pub struct Vector(Vec<f64>);
+
+
+/// easiest way to create a vector
+#[macro_export]
+macro_rules! vector {
+    ([ $($x:expr),* $(,)* ]) => {{
+        rs_sci::linear::Vector::new(vec![ $($x as f64),* ])
+    }};
 }
 
 impl Vector {
     pub fn new(data: Vec<f64>) -> Self {
-        Self { data }
+        Self(data)
     }
 
+    /// initialize zero vector
     pub fn zeros(size: usize) -> Self {
-        Self {
-            data: vec![0.0; size],
-        }
+        Self(vec![0.0; size])
     }
 
+    /// initialize identity vector
     pub fn ones(size: usize) -> Self {
-        Self {
-            data: vec![1.0; size],
-        }
+        Self(vec![1.0; size])
     }
 
+    /// return vectors length
     pub fn dimension(&self) -> usize {
-        self.data.len()
+        self.0.len()
     }
 
+    /// calculate vectors magnitude: \sqrt{x_1^2+x_2^2+...+x_n^2}
     pub fn magnitude(&self) -> f64 {
-        self.data.iter().map(|x| x * x).sum::<f64>().sqrt()
+        self.0.iter().map(|x| x * x).sum::<f64>().sqrt()
     }
 
+    /// normalize the vector: \frac{\ket{x}}{\braket{x\mid x}}
     pub fn normalize(&self) -> Self {
         let mag = self.magnitude();
-        Self::new(self.data.iter().map(|x| x / mag).collect())
+        Self::new(self.0.iter().map(|x| x / mag).collect())
     }
 
-    pub fn dot(&self, other: &Vector) -> Result<f64, &'static str> {
-        if self.dimension() != other.dimension() {
+    /// dot product of two vectors
+    pub fn dot(&self, rhs: &Vector) -> Result<f64, &'static str> {
+        if self.dimension() != rhs.dimension() {
             return Err("Vectors must have same dimension for dot product");
         }
-        Ok(self
-            .data
-            .iter()
-            .zip(other.data.iter())
-            .map(|(a, b)| a * b)
-            .sum())
+        Ok(self.0.iter().zip(rhs.0.iter()).map(|(a, b)| a * b).sum())
     }
 
+    /// cross product of two vectors
     pub fn cross(&self, other: &Vector) -> Result<Vector, &'static str> {
         if self.dimension() != 3 || other.dimension() != 3 {
             return Err("Cross product is only defined for 3D vectors");
         }
         Ok(Vector::new(vec![
-            self.data[1] * other.data[2] - self.data[2] * other.data[1],
-            self.data[2] * other.data[0] - self.data[0] * other.data[2],
-            self.data[0] * other.data[1] - self.data[1] * other.data[0],
+            self.0[1] * other.0[2] - self.0[2] * other.0[1],
+            self.0[2] * other.0[0] - self.0[0] * other.0[2],
+            self.0[0] * other.0[1] - self.0[1] * other.0[0],
         ]))
+    }
+
+    pub fn transpose(&self) -> Matrix {
+        Matrix::new(vec![self.0.clone()]).unwrap()
+    }
+
+    pub fn as_column_matrix(&self) -> Matrix {
+        Matrix::new(self.0.iter().map(|&x| vec![x]).collect()).unwrap()
     }
 }
 
@@ -68,9 +87,9 @@ impl Add for &Vector {
             return Err("Vectors must have same dimension for addition");
         }
         Ok(Vector::new(
-            self.data
+            self.0
                 .iter()
-                .zip(other.data.iter())
+                .zip(other.0.iter())
                 .map(|(a, b)| a + b)
                 .collect(),
         ))
@@ -85,9 +104,9 @@ impl Sub for Vector {
             return Err("Vectors must have same dimension for subtraction");
         }
         Ok(Self::new(
-            self.data
+            self.0
                 .iter()
-                .zip(other.data.iter())
+                .zip(other.0.iter())
                 .map(|(a, b)| a - b)
                 .collect(),
         ))
@@ -98,7 +117,7 @@ impl Mul<f64> for Vector {
     type Output = Self;
 
     fn mul(self, scalar: f64) -> Self {
-        Self::new(self.data.iter().map(|x| x * scalar).collect())
+        Self::new(self.0.iter().map(|x| x * scalar).collect())
     }
 }
 
@@ -109,7 +128,7 @@ impl Div<f64> for Vector {
         if scalar == 0.0 {
             panic!("Division by zero");
         }
-        Self::new(self.data.iter().map(|x| x / scalar).collect())
+        Self::new(self.0.iter().map(|x| x / scalar).collect())
     }
 }
 
@@ -117,20 +136,20 @@ impl Index<usize> for Vector {
     type Output = f64;
 
     fn index(&self, index: usize) -> &Self::Output {
-        &self.data[index]
+        &self.0[index]
     }
 }
 
 impl IndexMut<usize> for Vector {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.data[index]
+        &mut self.0[index]
     }
 }
 
 impl Display for Vector {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "[")?;
-        for (i, val) in self.data.iter().enumerate() {
+        for (i, val) in self.0.iter().enumerate() {
             if i > 0 {
                 write!(f, ", ")?;
             }
@@ -145,6 +164,19 @@ pub struct Matrix {
     pub data: Vec<Vec<f64>>,
     pub rows: usize,
     pub cols: usize,
+}
+
+#[macro_export]
+macro_rules! matrix {
+    ([ $( [ $($x:expr),* $(,)* ] ),* $(,)* ]) => {{
+        let data = vec![ $( vec![ $($x as f64),* ] ),* ];
+        Matrix::new(data).unwrap()
+    }};
+
+    ([ $($x:expr),* $(,)* ]) => {{
+        let data = vec![vec![ $($x as f64),* ]];
+        Matrix::new(data).unwrap()
+    }};
 }
 
 impl Matrix {
@@ -277,7 +309,7 @@ impl Matrix {
         for i in 0..v.cols {
             let v_i = v.get_column(i);
             let u_i = (self * &v_i)? / sigma[i];
-            u_cols.push(u_i.data);
+            u_cols.push(u_i.0);
         }
 
         let u = Matrix::new(u_cols.into_iter().map(|col| col).collect())?;
@@ -301,7 +333,7 @@ impl Matrix {
         for _ in 0..n {
             let (eigenval, eigenvec) = working_matrix.power_iteration(max_iter, tolerance)?;
             eigenvalues.push(eigenval);
-            eigenvectors.push(eigenvec.clone().data);
+            eigenvectors.push(eigenvec.clone().0);
 
             // Deflate the matrix
             working_matrix = self.deflate(&eigenvec, eigenval)?;
@@ -518,7 +550,7 @@ impl Mul<&Vector> for &Matrix {
         let mut result = vec![0.0; self.rows];
         for i in 0..self.rows {
             for j in 0..self.cols {
-                result[i] += self.data[i][j] * vector.data[j];
+                result[i] += self.data[i][j] * vector.0[j];
             }
         }
         Ok(Vector::new(result))
@@ -682,7 +714,6 @@ impl Matrix {
     }
 }
 
-
 #[allow(unused)]
 trait VectorOps {
     fn dot(&self, other: &Self) -> Result<f64, &'static str>;
@@ -692,23 +723,18 @@ trait VectorOps {
 
 impl VectorOps for Vector {
     fn dot(&self, other: &Self) -> Result<f64, &'static str> {
-        if self.data.len() != other.data.len() {
+        if self.0.len() != other.0.len() {
             return Err("Vectors must have same dimension for dot product");
         }
-        Ok(self
-            .data
-            .iter()
-            .zip(other.data.iter())
-            .map(|(a, b)| a * b)
-            .sum())
+        Ok(self.0.iter().zip(other.0.iter()).map(|(a, b)| a * b).sum())
     }
 
     fn magnitude(&self) -> f64 {
-        self.data.iter().map(|x| x * x).sum::<f64>().sqrt()
+        self.0.iter().map(|x| x * x).sum::<f64>().sqrt()
     }
 
     fn normalize(&self) -> Self {
         let mag = self.magnitude();
-        Self::new(self.data.iter().map(|x| x / mag).collect())
+        Self::new(self.0.iter().map(|x| x / mag).collect())
     }
 }
