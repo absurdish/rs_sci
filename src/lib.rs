@@ -1,20 +1,16 @@
-pub mod calculus;
-pub mod complex;
 pub mod consts;
-pub mod linear;
-pub mod stats;
 pub mod units;
-pub mod algebra;
+pub mod math;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::complex::Complex;
+    use crate::math::complex::Complex;
     use crate::consts::Const;
-    use crate::linear::{Matrix, Vector};
-    use crate::stats::Stats;
+    use crate::math::linear::{Matrix, Vector};
+    use crate::math::stats::Stats;
     use crate::units::*;
     use std::f64::consts::PI;
+    use crate::math::calculus;
 
     // consts
     #[test]

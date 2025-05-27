@@ -1,10 +1,4 @@
-// 1. fix units
-// 2. better complex numbers
-// 3. custom algebraic structures
-// 4. better display
-//
-
-use complex::Complex;
+use rs_sci::math::complex::Complex;
 use rs_sci::*;
 
 fn main() {
