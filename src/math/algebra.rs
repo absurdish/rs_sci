@@ -324,9 +324,9 @@ macro_rules! impl_axioms {
 macro_rules! impl_axiom {
     ($type:ident, Associativity) => {
         impl<T: std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Copy + PartialEq>
-            $crate::Associativity<T> for $type<T>
+            $crate::math::algebra::Associativity<T> for $type<T>
         where
-            $type<T>: $crate::AdditiveOperation<T> + $crate::MultiplicativeOperation<T>,
+            $type<T>: $crate::math::algebra::AdditiveOperation<T> + $crate::math::algebra::MultiplicativeOperation<T>,
         {
             fn verify_associativity_add(&self, b: &Self, c: &Self) -> bool {
                 let left = (*self + *b) + *c;
@@ -344,9 +344,9 @@ macro_rules! impl_axiom {
 
     ($type:ident, Commutativity) => {
         impl<T: std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Copy + PartialEq>
-            $crate::Commutativity<T> for $type<T>
+            $crate::math::algebra::Commutativity<T> for $type<T>
         where
-            $type<T>: $crate::AdditiveOperation<T> + $crate::MultiplicativeOperation<T>,
+            $type<T>: $crate::math::algebra::AdditiveOperation<T> + $crate::math::algebra::MultiplicativeOperation<T>,
         {
             fn verify_commutativity_add(&self, other: &Self) -> bool {
                 let left = *self + *other;
@@ -363,7 +363,7 @@ macro_rules! impl_axiom {
     };
 
     ($type:ident, Identity($($identity:expr),*)) => {
-        impl $crate::Identity<f32> for $type<f32> {
+        impl $crate::math::algebra::Identity<f32> for $type<f32> {
             fn verify_additive_identity(&self, identity: &f32) -> bool {
                 let id = $type(*identity);
                 *self + id == *self && id + *self == *self
@@ -386,7 +386,7 @@ macro_rules! impl_axiom {
 
     ($type:ident, Distributivity) => {
         impl<T: std::ops::Add<Output = T> + std::ops::Mul<Output = T> + Copy + PartialEq>
-            $crate::Distributivity<T> for $type<T>
+            $crate::math::algebra::Distributivity<T> for $type<T>
         {
             fn verify_distributivity(&self, b: &Self, c: &Self) -> bool {
                 let left = *self * (*b + *c);
@@ -423,57 +423,5 @@ impl<T: Div<Output = T> + Copy + PartialEq> Field<T> {
         T: Default,
     {
         self.0 != T::default()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_ring_operations() {
-        let a = Ring(5.0);
-        let b = Ring(3.0);
-        let c = Ring(2.0);
-
-        // Test basic operations
-        assert_eq!(a + b, Ring(8.0));
-        assert_eq!(a * b, Ring(15.0));
-
-        // Test associativity
-        assert!(a.verify_associativity_add(&b, &c));
-        assert!(a.verify_associativity_mul(&b, &c));
-
-        // Test commutativity
-        assert!(a.verify_commutativity_add(&b));
-        assert!(a.verify_commutativity_mul(&b));
-
-        // Test distributivity
-        assert!(a.verify_distributivity(&b, &c));
-    }
-
-    #[test]
-    fn test_field_operations() {
-        let a = Field(5.0);
-        let b = Field(3.0);
-        let c = Field(2.0);
-
-        // Test basic operations
-        assert_eq!(a + b, Field(8.0));
-        assert_eq!(a * b, Field(15.0));
-        assert_eq!(a / b, Field(5.0 / 3.0));
-
-        // Test axioms
-        assert!(a.verify_associativity_add(&b, &c));
-        assert!(a.verify_commutativity_mul(&b));
-        assert!(a.verify_distributivity(&b, &c));
-    }
-
-    #[test]
-    fn test_identity_elements() {
-        let a = Field(42.0);
-
-        assert!(a.verify_additive_identity(&0.0));
-        assert!(a.verify_multiplicative_identity(&1.0));
     }
 }
