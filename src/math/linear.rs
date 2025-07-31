@@ -79,10 +79,10 @@ impl Vector {
     }
 }
 
-impl Add for &Vector {
-    type Output = Result<Vector, &'static str>;
+impl Add for Vector {
+    type Output = Result<Self, &'static str>;
 
-    fn add(self, other: &Vector) -> Self::Output {
+    fn add(self, other: Self) -> Self::Output {
         if self.dimension() != other.dimension() {
             return Err("Vectors must have same dimension for addition");
         }
@@ -166,6 +166,9 @@ pub struct Matrix {
     pub cols: usize,
 }
 
+/// instead of `Matrix::new(vec![vec![1.0,0.0], vec![0.0, -1.0]]);`
+///
+/// use `matrix!([1.0,0.0],[0.0,-1.0])`
 #[macro_export]
 macro_rules! matrix {
     ([ $( [ $($x:expr),* $(,)* ] ),* $(,)* ]) => {{
@@ -243,17 +246,17 @@ impl Matrix {
         }
     }
 
-    fn cofactor(&self, row: usize, col: usize) -> Result<f64, &'static str> {
+    pub fn cofactor(&self, row: usize, col: usize) -> Result<f64, &'static str> {
         let minor = self.minor(row, col)?;
         Ok(minor * if (row + col) % 2 == 0 { 1.0 } else { -1.0 })
     }
 
-    fn minor(&self, row: usize, col: usize) -> Result<f64, &'static str> {
+    pub fn minor(&self, row: usize, col: usize) -> Result<f64, &'static str> {
         let submatrix = self.submatrix(row, col)?;
         submatrix.determinant()
     }
 
-    fn submatrix(&self, row: usize, col: usize) -> Result<Matrix, &'static str> {
+    pub fn submatrix(&self, row: usize, col: usize) -> Result<Matrix, &'static str> {
         let mut result = Vec::new();
         for i in 0..self.rows {
             if i == row {
@@ -308,7 +311,7 @@ impl Matrix {
         let mut u_cols = Vec::new();
         for i in 0..v.cols {
             let v_i = v.get_column(i);
-            let u_i = (self * &v_i)? / sigma[i];
+            let u_i = (self.clone() * &v_i)? / sigma[i];
             u_cols.push(u_i.0);
         }
 
@@ -452,10 +455,10 @@ impl IndexMut<usize> for Matrix {
     }
 }
 
-impl Add for &Matrix {
-    type Output = Result<Matrix, &'static str>;
+impl Add for Matrix {
+    type Output = Result<Self, &'static str>;
 
-    fn add(self, other: &Matrix) -> Self::Output {
+    fn add(self, other: Self) -> Self::Output {
         if self.rows != other.rows || self.cols != other.cols {
             return Err("Matrices must have same dimensions for addition");
         }
@@ -540,7 +543,7 @@ impl Div<f64> for Matrix {
     }
 }
 
-impl Mul<&Vector> for &Matrix {
+impl Mul<&Vector> for Matrix {
     type Output = Result<Vector, &'static str>;
 
     fn mul(self, vector: &Vector) -> Self::Output {

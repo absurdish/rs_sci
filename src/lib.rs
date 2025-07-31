@@ -1,16 +1,16 @@
 pub mod consts;
-pub mod units;
 pub mod math;
+pub mod units;
 
 #[cfg(test)]
 mod tests {
-    use crate::math::complex::Complex;
     use crate::consts::Const;
+    use crate::math::calculus;
+    use crate::math::complex::Complex;
     use crate::math::linear::{Matrix, Vector};
     use crate::math::stats::Stats;
     use crate::units::*;
     use std::f64::consts::PI;
-    use crate::math::calculus;
 
     // consts
     #[test]
@@ -264,7 +264,7 @@ mod tests {
         let normalized = v3.normalize();
         assert!((normalized.magnitude() - 1.0).abs() < 1e-10);
 
-        let sum = (&v1 + &v2).unwrap();
+        let sum = (v1 + v2).unwrap();
         assert!((sum[0] - 5.0).abs() < 1e-10);
         assert!((sum[1] - 7.0).abs() < 1e-10);
         assert!((sum[2] - 9.0).abs() < 1e-10);
@@ -315,7 +315,7 @@ mod tests {
 
         // Test matrix-vector multiplication
         let v = Vector::new(vec![1.0, 2.0]);
-        let mv = (&m * &v).unwrap();
+        let mv = (m.clone() * &v).unwrap();
         assert!((mv[0] - 5.0).abs() < 1e-10);
         assert!((mv[1] - 11.0).abs() < 1e-10);
 

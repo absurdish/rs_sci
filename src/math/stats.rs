@@ -412,7 +412,6 @@ impl Stats {
         combinations as f64 * p.powi(k as i32) * (1.0 - p).powi((n - k) as i32)
     }
 
-    // Helper function for combinations
     fn combinations(n: u64, k: u64) -> u64 {
         if k > n {
             return 0;
